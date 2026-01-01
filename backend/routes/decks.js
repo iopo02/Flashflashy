@@ -1,8 +1,16 @@
 const express = require('express');
+const crypto = require('crypto');
 const Deck = require('../models/Deck');
 const Card = require('../models/Card');
 const { requireAuth } = require('../middleware/auth');
 const router = express.Router();
+
+/**
+ * Generate a unique share ID for deck sharing
+ */
+function generateShareId() {
+  return crypto.randomBytes(8).toString('base64url').substring(0, 12);
+}
 
 // All deck routes require authentication
 router.use(requireAuth);
@@ -89,6 +97,7 @@ router.post('/', async (req, res) => {
       title: title.trim(),
       description: description ? description.trim() : '',
       isPublic: isPublic === true,
+      shareId: isPublic === true ? generateShareId() : null,
     });
 
     await deck.save();
@@ -145,13 +154,29 @@ router.patch('/:deckId', async (req, res) => {
 
     if (isPublic !== undefined) {
       deck.isPublic = isPublic === true;
+      // Use provided shareId or generate one if making public and doesn't have one
+      if (isPublic === true) {
+        if (req.body.shareId && typeof req.body.shareId === 'string' && req.body.shareId.trim().length > 0) {
+          // Use the provided shareId (from frontend optimistic update)
+          deck.shareId = req.body.shareId.trim();
+        } else if (!deck.shareId) {
+          // Generate new shareId if none provided and deck doesn't have one
+          deck.shareId = generateShareId();
+        }
+      } else {
+        // Remove shareId if making private
+        deck.shareId = null;
+      }
     }
 
     await deck.save();
 
+    // Reload deck to ensure we have the latest data including shareId
+    const updatedDeck = await Deck.findById(deckId);
+
     res.json({
       message: 'Deck updated successfully',
-      deck,
+      deck: updatedDeck,
     });
   } catch (error) {
     console.error('Error updating deck:', error);

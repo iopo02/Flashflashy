@@ -129,6 +129,99 @@ router.patch('/:cardId', async (req, res) => {
 });
 
 /**
+ * PATCH /api/cards/:cardId/rate
+ * Rate a card for spaced repetition (1-4: Again, Hard, Good, Easy)
+ */
+router.patch('/:cardId/rate', async (req, res) => {
+  try {
+    const { cardId } = req.params;
+    const { rating } = req.body; // 1 = Again, 2 = Hard, 3 = Good, 4 = Easy
+
+    if (!rating || rating < 1 || rating > 4) {
+      return res.status(400).json({ 
+        message: 'Rating must be between 1 and 4' 
+      });
+    }
+
+    // Find card and verify it belongs to user's deck
+    const card = await Card.findById(cardId);
+    
+    if (!card) {
+      return res.status(404).json({ 
+        message: 'Card not found' 
+      });
+    }
+
+    // Verify deck belongs to user
+    const deck = await Deck.findOne({ 
+      _id: card.deckId, 
+      ownerId: req.userId 
+    });
+
+    if (!deck) {
+      return res.status(403).json({ 
+        message: 'You do not have permission to rate this card' 
+      });
+    }
+
+    // SM-2 Algorithm for spaced repetition
+    let newEaseFactor = card.easeFactor || 2.5;
+    let newInterval = card.interval || 0;
+
+    if (rating === 1) {
+      // Again - reset to learning phase
+      newInterval = 0;
+      newEaseFactor = Math.max(1.3, newEaseFactor - 0.2);
+    } else if (rating === 2) {
+      // Hard - slight increase
+      if (newInterval === 0) {
+        newInterval = 1;
+      } else {
+        newInterval = Math.floor(newInterval * 1.2);
+      }
+      newEaseFactor = Math.max(1.3, newEaseFactor - 0.15);
+    } else if (rating === 3) {
+      // Good - significant increase
+      if (newInterval === 0) {
+        newInterval = 1;
+      } else {
+        newInterval = Math.floor(newInterval * newEaseFactor);
+      }
+      // Ease factor stays the same for "Good"
+    } else if (rating === 4) {
+      // Easy - greatly extended
+      if (newInterval === 0) {
+        newInterval = 4;
+      } else {
+        newInterval = Math.floor(newInterval * newEaseFactor * 1.3);
+      }
+      newEaseFactor = Math.min(2.5, newEaseFactor + 0.15);
+    }
+
+    // Calculate next review date
+    const nextReview = new Date();
+    nextReview.setDate(nextReview.getDate() + newInterval);
+
+    // Update card
+    card.easeFactor = newEaseFactor;
+    card.interval = newInterval;
+    card.nextReview = nextReview;
+
+    await card.save();
+
+    res.json({
+      message: 'Card rated successfully',
+      card,
+    });
+  } catch (error) {
+    console.error('Error rating card:', error);
+    res.status(500).json({ 
+      message: 'Error rating card' 
+    });
+  }
+});
+
+/**
  * DELETE /api/cards/:cardId
  * Delete a card
  */

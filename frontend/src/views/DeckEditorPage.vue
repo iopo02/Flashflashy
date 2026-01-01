@@ -10,6 +10,7 @@
         <div class="deck-header-section">
           <div class="header-actions">
             <button @click="goBack" class="back-btn">← Back to Decks</button>
+            <button @click="startStudy" class="study-btn">▶ Study Deck</button>
             <button @click="showDeleteModal = true" class="delete-deck-btn">Delete Deck</button>
           </div>
           <div class="deck-info">
@@ -27,6 +28,32 @@
               placeholder="Deck description (optional)"
               @blur="saveDeckDescription"
             ></textarea>
+            <div class="deck-settings">
+              <label class="public-toggle">
+                <input
+                  v-model="deckIsPublic"
+                  type="checkbox"
+                  @change="saveDeckPublic"
+                />
+                <span>Make this deck public</span>
+              </label>
+              <div v-if="deckIsPublic && shareLink" class="share-link-section">
+                <label>Share Link</label>
+                <div class="share-link-container">
+                  <input
+                    :value="shareLink"
+                    type="text"
+                    readonly
+                    class="share-link-input"
+                    @click="$event.target.select()"
+                  />
+                  <button @click="copyShareLink" class="copy-btn">
+                    {{ shareLinkCopied ? 'Copied!' : 'Copy' }}
+                  </button>
+                </div>
+                <p class="share-hint">Anyone with this link can view and copy this deck</p>
+              </div>
+            </div>
           </div>
         </div>
 
@@ -66,7 +93,7 @@
                 </div>
               </div>
               <button @click="deleteCard(card)" class="delete-card-btn" title="Delete card">
-                🗑️
+                <span class="icon">×</span>
               </button>
             </div>
           </div>
@@ -112,9 +139,19 @@ export default {
       loading: false,
       deckTitle: '',
       deckDescription: '',
+      deckIsPublic: false,
       showDeleteModal: false,
       savingCard: new Set(),
+      shareLinkCopied: false,
     };
+  },
+  computed: {
+    shareLink() {
+      if (this.deck && this.deck.shareId) {
+        return `${window.location.origin}/shared/${this.deck.shareId}`;
+      }
+      return '';
+    },
   },
   mounted() {
     this.fetchDeck();
@@ -132,6 +169,8 @@ export default {
         this.cards = response.data.cards;
         this.deckTitle = this.deck.title;
         this.deckDescription = this.deck.description || '';
+        this.deckIsPublic = this.deck.isPublic || false;
+        this.shareLinkCopied = false;
       } catch (error) {
         console.error('Error fetching deck:', error);
         if (error.response?.status === 404) {
@@ -145,6 +184,11 @@ export default {
     },
     goBack() {
       this.$router.push('/decks');
+    },
+    startStudy() {
+      if (this.deck && this.deck._id) {
+        this.$router.push(`/decks/${this.deck._id}/study`);
+      }
     },
     async saveDeckTitle() {
       if (this.deckTitle.trim() === this.deck.title) return;
@@ -178,6 +222,75 @@ export default {
       } catch (error) {
         console.error('Error saving deck description:', error);
         this.deckDescription = this.deck.description || ''; // Revert on error
+      }
+    },
+    generateShareId() {
+      // Generate a random shareId similar to backend (12 characters base64url)
+      const array = new Uint8Array(8);
+      crypto.getRandomValues(array);
+      return btoa(String.fromCharCode(...array))
+        .replace(/\+/g, '-')
+        .replace(/\//g, '_')
+        .replace(/=/g, '')
+        .substring(0, 12);
+    },
+    async saveDeckPublic() {
+      if (this.deckIsPublic === (this.deck.isPublic || false)) return;
+      
+      // Optimistically generate shareId immediately if making public
+      let optimisticShareId = null;
+      if (this.deckIsPublic && !this.deck.shareId) {
+        optimisticShareId = this.generateShareId();
+        this.deck.shareId = optimisticShareId;
+      }
+      
+      try {
+        const userId = localStorage.getItem('userId');
+        const response = await axios.patch(`/decks/${this.deck._id}`, {
+          isPublic: this.deckIsPublic,
+          shareId: optimisticShareId, // Send the optimistically generated shareId
+          userId,
+        }, {
+          params: { userId },
+        });
+        // Update deck object with response data (backend will generate its own shareId)
+        if (response.data.deck) {
+          this.deck = response.data.deck;
+          this.deckIsPublic = this.deck.isPublic || false;
+        } else {
+          // Fallback: refresh deck to get updated shareId
+          await this.fetchDeck();
+        }
+      } catch (error) {
+        console.error('Error saving deck public status:', error);
+        this.deckIsPublic = this.deck.isPublic || false; // Revert on error
+        // Revert shareId if error
+        if (!this.deck.isPublic) {
+          this.deck.shareId = null;
+        }
+        alert(error.response?.data?.message || 'Error updating deck visibility');
+      }
+    },
+    copyShareLink() {
+      if (this.shareLink) {
+        navigator.clipboard.writeText(this.shareLink).then(() => {
+          this.shareLinkCopied = true;
+          setTimeout(() => {
+            this.shareLinkCopied = false;
+          }, 2000);
+        }).catch(() => {
+          // Fallback for older browsers
+          const input = document.createElement('input');
+          input.value = this.shareLink;
+          document.body.appendChild(input);
+          input.select();
+          document.execCommand('copy');
+          document.body.removeChild(input);
+          this.shareLinkCopied = true;
+          setTimeout(() => {
+            this.shareLinkCopied = false;
+          }, 2000);
+        });
       }
     },
     async addNewCard() {
@@ -266,8 +379,9 @@ export default {
 
 <style scoped>
 .deck-editor-page {
-  padding: 20px;
-  min-height: calc(100vh - 200px);
+  padding: 40px 20px;
+  min-height: calc(100vh - 60px);
+  background-color: #ffffff;
 }
 
 .editor-container {
@@ -277,79 +391,196 @@ export default {
 
 .loading {
   text-align: center;
-  padding: 40px;
+  padding: 60px 20px;
   color: #666;
+  font-size: 14px;
 }
 
 .editor-content {
-  background: white;
-  border-radius: 8px;
-  padding: 30px;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  background: #ffffff;
+  padding: 0;
 }
 
 .deck-header-section {
-  margin-bottom: 30px;
-  padding-bottom: 20px;
-  border-bottom: 2px solid #e0e0e0;
+  margin-bottom: 32px;
+  padding-bottom: 24px;
+  border-bottom: 1px solid #e0e0e0;
 }
 
 .header-actions {
   display: flex;
   justify-content: space-between;
-  margin-bottom: 20px;
+  gap: 12px;
+  margin-bottom: 24px;
+  flex-wrap: wrap;
 }
 
 .back-btn {
   padding: 8px 16px;
-  background-color: #95a5a6;
-  color: white;
-  border: none;
-  border-radius: 4px;
+  background-color: #ffffff;
+  color: #1a237e;
+  border: 1px solid #767676;
   cursor: pointer;
   font-weight: 500;
+  font-size: 14px;
+  transition: background-color 0.2s;
+}
+
+.back-btn:hover {
+  background-color: #f5f5f5;
+}
+
+.study-btn {
+  padding: 8px 16px;
+  background-color: #5c6bc0;
+  color: #ffffff;
+  border: none;
+  cursor: pointer;
+  font-weight: 500;
+  font-size: 14px;
+  transition: background-color 0.2s;
+}
+
+.study-btn:hover {
+  background-color: #4a56b2;
 }
 
 .delete-deck-btn {
   padding: 8px 16px;
-  background-color: #e74c3c;
-  color: white;
+  background-color: #d13212;
+  color: #ffffff;
   border: none;
-  border-radius: 4px;
   cursor: pointer;
   font-weight: 500;
+  font-size: 14px;
+  transition: background-color 0.2s;
+}
+
+.delete-deck-btn:hover {
+  background-color: #b8280f;
 }
 
 .deck-title-input {
   width: 100%;
-  padding: 12px;
-  border: 2px solid #e0e0e0;
-  border-radius: 4px;
-  font-size: 24px;
-  font-weight: 600;
-  margin-bottom: 10px;
+  padding: 8px 12px;
+  border: 1px solid #767676;
+  font-size: 20px;
+  font-weight: 400;
+  margin-bottom: 12px;
   box-sizing: border-box;
+  font-family: inherit;
 }
 
 .deck-title-input:focus {
   outline: none;
-  border-color: #42b983;
+  border-color: #5c6bc0;
+  box-shadow: 0 0 0 3px rgba(255, 153, 0, 0.1);
 }
 
 .deck-description-input {
   width: 100%;
-  padding: 10px;
-  border: 2px solid #e0e0e0;
-  border-radius: 4px;
-  font-size: 16px;
+  padding: 8px 12px;
+  border: 1px solid #767676;
+  font-size: 14px;
   min-height: 60px;
   box-sizing: border-box;
   resize: vertical;
+  font-family: inherit;
 }
 
 .deck-description-input:focus {
   outline: none;
-  border-color: #42b983;
+  border-color: #5c6bc0;
+  box-shadow: 0 0 0 3px rgba(255, 153, 0, 0.1);
+}
+
+.deck-settings {
+  margin-top: 20px;
+}
+
+.public-toggle {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  user-select: none;
+  font-size: 14px;
+}
+
+.public-toggle input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  cursor: pointer;
+}
+
+.public-toggle span {
+  color: #1a237e;
+  font-weight: 400;
+}
+
+.share-link-section {
+  margin-top: 20px;
+  padding-top: 20px;
+  border-top: 1px solid #e0e0e0;
+}
+
+.share-link-section label {
+  display: block;
+  margin-bottom: 8px;
+  color: #1a237e;
+  font-weight: 500;
+  font-size: 14px;
+}
+
+.share-link-container {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 8px;
+}
+
+.share-link-input {
+  flex: 1;
+  padding: 8px 12px;
+  border: 1px solid #767676;
+  font-size: 14px;
+  background-color: #f5f5f5;
+  cursor: text;
+  font-family: inherit;
+}
+
+.share-link-input:focus {
+  outline: none;
+  border-color: #5c6bc0;
+  background-color: #ffffff;
+  box-shadow: 0 0 0 3px rgba(255, 153, 0, 0.1);
+}
+
+.copy-btn {
+  padding: 8px 16px;
+  background-color: #5c6bc0;
+  color: #ffffff;
+  border: none;
+  cursor: pointer;
+  font-weight: 500;
+  white-space: nowrap;
+  font-size: 14px;
+  transition: background-color 0.2s;
+}
+
+.copy-btn:hover {
+  background-color: #4a56b2;
+}
+
+.share-hint {
+  font-size: 12px;
+  color: #666;
+  margin: 0;
+}
+
+.share-link-loading {
+  padding: 10px;
+  color: #666;
+  font-style: italic;
 }
 
 .cards-section {
@@ -365,17 +596,24 @@ export default {
 
 .cards-header h2 {
   margin: 0;
-  color: #2c3e50;
+  color: #1a237e;
+  font-size: 20px;
+  font-weight: 400;
 }
 
 .add-card-btn {
-  padding: 10px 20px;
-  background-color: #42b983;
-  color: white;
+  padding: 8px 16px;
+  background-color: #5c6bc0;
+  color: #ffffff;
   border: none;
-  border-radius: 4px;
   cursor: pointer;
-  font-weight: 600;
+  font-weight: 500;
+  font-size: 14px;
+  transition: background-color 0.2s;
+}
+
+.add-card-btn:hover {
+  background-color: #4a56b2;
 }
 
 .cards-list {
@@ -388,20 +626,19 @@ export default {
   display: flex;
   gap: 15px;
   padding: 20px;
-  background-color: #f9f9f9;
-  border-radius: 8px;
-  border: 2px solid #e0e0e0;
+  background-color: #ffffff;
+  border: 1px solid #e0e0e0;
   transition: border-color 0.2s;
 }
 
 .card-item:hover {
-  border-color: #42b983;
+  border-color: #5c6bc0;
 }
 
 .card-number {
-  font-size: 24px;
-  font-weight: bold;
-  color: #42b983;
+  font-size: 18px;
+  font-weight: 500;
+  color: #5c6bc0;
   min-width: 40px;
   display: flex;
   align-items: flex-start;
@@ -421,18 +658,17 @@ export default {
 }
 
 .card-side label {
-  font-weight: 600;
-  color: #2c3e50;
+  font-weight: 500;
+  color: #1a237e;
   margin-bottom: 8px;
   font-size: 14px;
 }
 
 .card-textarea {
   width: 100%;
-  padding: 10px;
-  border: 2px solid #e0e0e0;
-  border-radius: 4px;
-  font-size: 16px;
+  padding: 8px 12px;
+  border: 1px solid #767676;
+  font-size: 14px;
   min-height: 100px;
   resize: vertical;
   box-sizing: border-box;
@@ -441,7 +677,8 @@ export default {
 
 .card-textarea:focus {
   outline: none;
-  border-color: #42b983;
+  border-color: #5c6bc0;
+  box-shadow: 0 0 0 3px rgba(255, 153, 0, 0.1);
 }
 
 .delete-card-btn {
@@ -449,14 +686,26 @@ export default {
   border: none;
   font-size: 20px;
   cursor: pointer;
-  opacity: 0.6;
-  transition: opacity 0.2s;
+  opacity: 0.5;
+  transition: opacity 0.2s, background-color 0.2s;
   align-self: flex-start;
-  padding: 5px;
+  padding: 8px;
+  color: #d13212;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
 }
 
 .delete-card-btn:hover {
   opacity: 1;
+  background-color: #fef0ef;
+}
+
+.delete-card-btn .icon {
+  font-weight: bold;
+  line-height: 1;
 }
 
 .empty-cards {
@@ -510,23 +759,33 @@ export default {
 }
 
 .confirm-delete-btn {
-  padding: 10px 20px;
-  background-color: #e74c3c;
-  color: white;
+  padding: 8px 16px;
+  background-color: #d13212;
+  color: #ffffff;
   border: none;
-  border-radius: 4px;
   cursor: pointer;
-  font-weight: 600;
+  font-weight: 500;
+  font-size: 14px;
+  transition: background-color 0.2s;
+}
+
+.confirm-delete-btn:hover {
+  background-color: #b8280f;
 }
 
 .cancel-btn {
-  padding: 10px 20px;
-  background-color: #95a5a6;
-  color: white;
-  border: none;
-  border-radius: 4px;
+  padding: 8px 16px;
+  background-color: #ffffff;
+  color: #1a237e;
+  border: 1px solid #767676;
   cursor: pointer;
-  font-weight: 600;
+  font-weight: 500;
+  font-size: 14px;
+  transition: background-color 0.2s;
+}
+
+.cancel-btn:hover {
+  background-color: #f5f5f5;
 }
 </style>
 

@@ -10,16 +10,17 @@ const mongoose = require('mongoose');
 const User = require('../models/User');
 const { ADMIN_USER_ID } = require('../config/admin');
 
-const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/flashflashy';
+// Support both MONGODB_URI (preferred) and DATABASE_URI (alias) for backward compatibility
+const MONGODB_URI = process.env.MONGODB_URI || process.env.DATABASE_URI || 'mongodb://localhost:27017/flashflashy';
 
 async function ensureAdmin() {
   try {
-    // Connect to MongoDB
+    // Connect to database
     await mongoose.connect(MONGODB_URI, {
       useNewUrlParser: true,
       useUnifiedTopology: true,
     });
-    console.log('Connected to MongoDB');
+    console.log('Connected to database');
 
     // Find and update admin user
     const adminUser = await User.findById(ADMIN_USER_ID);

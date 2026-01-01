@@ -140,14 +140,13 @@ export default {
   display: flex;
   justify-content: center;
   align-items: center;
-  min-height: calc(100vh - 200px);
-  padding: 20px;
+  min-height: calc(100vh - 60px);
+  padding: 40px 20px;
+  background-color: #ffffff;
 }
 
 .login-container {
-  background: white;
-  border-radius: 8px;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  background: #ffffff;
   padding: 40px;
   width: 100%;
   max-width: 450px;
@@ -155,8 +154,10 @@ export default {
 
 h1 {
   text-align: center;
-  color: #2c3e50;
+  color: #1a237e;
   margin-bottom: 30px;
+  font-size: 28px;
+  font-weight: 400;
 }
 
 .login-form {
@@ -172,37 +173,39 @@ h1 {
 label {
   display: block;
   margin-bottom: 8px;
-  color: #2c3e50;
+  color: #1a237e;
   font-weight: 500;
+  font-size: 14px;
 }
 
 input {
   width: 100%;
-  padding: 12px;
-  border: 2px solid #e0e0e0;
-  border-radius: 4px;
-  font-size: 16px;
-  transition: border-color 0.3s;
+  padding: 8px 12px;
+  border: 1px solid #767676;
+  font-size: 14px;
+  transition: border-color 0.2s;
   box-sizing: border-box;
+  font-family: inherit;
 }
 
 input:focus {
   outline: none;
-  border-color: #42b983;
+  border-color: #5c6bc0;
+  box-shadow: 0 0 0 3px rgba(255, 153, 0, 0.1);
 }
 
 input.error {
-  border-color: #e74c3c;
+  border-color: #d13212;
 }
 
 .error-message {
-  color: #e74c3c;
+  color: #d13212;
   font-size: 14px;
   margin-top: 5px;
 }
 
 .success-message {
-  color: #42b983;
+  color: #155724;
   font-size: 14px;
   margin-top: 15px;
   padding: 10px;
@@ -213,20 +216,19 @@ input.error {
 
 .submit-btn {
   width: 100%;
-  padding: 12px;
-  background-color: #42b983;
-  color: white;
+  padding: 10px;
+  background-color: #5c6bc0;
+  color: #ffffff;
   border: none;
-  border-radius: 4px;
-  font-size: 16px;
-  font-weight: 600;
+  font-size: 14px;
+  font-weight: 500;
   cursor: pointer;
-  transition: background-color 0.3s;
+  transition: background-color 0.2s;
   margin-top: 10px;
 }
 
 .submit-btn:hover:not(:disabled) {
-  background-color: #35a372;
+  background-color: #4a56b2;
 }
 
 .submit-btn:disabled {
@@ -238,10 +240,11 @@ input.error {
   margin-top: 20px;
   text-align: center;
   color: #666;
+  font-size: 14px;
 }
 
 .register-link a {
-  color: #42b983;
+  color: #5c6bc0;
   text-decoration: none;
   font-weight: 500;
 }

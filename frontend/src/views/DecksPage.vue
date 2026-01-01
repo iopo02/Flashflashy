@@ -15,16 +15,18 @@
           v-for="deck in decks"
           :key="deck._id"
           class="deck-card"
-          @click="editDeck(deck._id)"
         >
           <div class="deck-header">
             <h3>{{ deck.title }}</h3>
             <div class="deck-actions" @click.stop>
+              <button @click="studyDeck(deck._id)" class="icon-btn study-btn" title="Study">
+                <span class="icon">▶</span>
+              </button>
               <button @click="editDeck(deck._id)" class="icon-btn" title="Edit">
-                ✏️
+                <span class="icon">✎</span>
               </button>
               <button @click="confirmDelete(deck)" class="icon-btn delete-btn" title="Delete">
-                🗑️
+                <span class="icon">×</span>
               </button>
             </div>
           </div>
@@ -32,6 +34,7 @@
           <div class="deck-footer">
             <span class="deck-meta">{{ formatDate(deck.createdAt) }}</span>
             <span v-if="deck.isPublic" class="public-badge">Public</span>
+            <span v-else class="private-badge">Private</span>
           </div>
         </div>
       </div>
@@ -144,6 +147,9 @@ export default {
     editDeck(deckId) {
       this.$router.push(`/decks/${deckId}/edit`);
     },
+    studyDeck(deckId) {
+      this.$router.push(`/decks/${deckId}/study`);
+    },
     openCreateModal() {
       this.deckForm = {
         title: '',
@@ -224,8 +230,9 @@ export default {
 
 <style scoped>
 .decks-page {
-  padding: 20px;
-  min-height: calc(100vh - 200px);
+  padding: 40px 20px;
+  min-height: calc(100vh - 60px);
+  background-color: #ffffff;
 }
 
 .decks-container {
@@ -237,72 +244,77 @@ export default {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 30px;
+  margin-bottom: 24px;
 }
 
 .page-header h1 {
-  color: #2c3e50;
+  color: #1a237e;
   margin: 0;
+  font-size: 28px;
+  font-weight: 400;
 }
 
 .create-btn {
-  padding: 12px 24px;
-  background-color: #42b983;
-  color: white;
+  padding: 10px 20px;
+  background-color: #5c6bc0;
+  color: #ffffff;
   border: none;
-  border-radius: 4px;
-  font-size: 16px;
-  font-weight: 600;
+  font-size: 14px;
+  font-weight: 500;
   cursor: pointer;
-  transition: background-color 0.3s;
+  transition: background-color 0.2s;
 }
 
 .create-btn:hover {
-  background-color: #35a372;
+  background-color: #4a56b2;
 }
 
 .loading {
   text-align: center;
-  padding: 40px;
+  padding: 60px 20px;
   color: #666;
+  font-size: 14px;
 }
 
 .decks-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
   gap: 20px;
 }
 
 .deck-card {
-  background: white;
-  border-radius: 8px;
+  background: #ffffff;
+  border: 1px solid #e0e0e0;
   padding: 20px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  cursor: pointer;
-  transition: transform 0.2s, box-shadow 0.2s;
+  transition: border-color 0.2s, box-shadow 0.2s;
 }
 
 .deck-card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  border-color: #5c6bc0;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
 }
 
 .deck-header {
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
-  margin-bottom: 10px;
+  margin-bottom: 12px;
+  gap: 12px;
 }
 
 .deck-header h3 {
   margin: 0;
-  color: #2c3e50;
+  color: #1a237e;
   flex: 1;
+  font-size: 18px;
+  font-weight: 400;
+  line-height: 1.4;
+  cursor: pointer;
 }
 
 .deck-actions {
   display: flex;
-  gap: 8px;
+  gap: 4px;
 }
 
 .icon-btn {
@@ -310,22 +322,41 @@ export default {
   border: none;
   font-size: 18px;
   cursor: pointer;
-  padding: 4px;
-  opacity: 0.7;
-  transition: opacity 0.2s;
+  padding: 6px 8px;
+  opacity: 0.6;
+  transition: opacity 0.2s, background-color 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .icon-btn:hover {
   opacity: 1;
+  background-color: #f5f5f5;
+}
+
+.icon-btn .icon {
+  font-weight: bold;
+  line-height: 1;
+}
+
+.icon-btn.study-btn .icon {
+  color: #5c6bc0;
+}
+
+.icon-btn.delete-btn .icon {
+  color: #d13212;
 }
 
 .delete-btn {
-  opacity: 0.6;
+  opacity: 0.5;
 }
 
 .deck-description {
   color: #666;
-  margin: 10px 0;
+  margin: 12px 0;
+  font-size: 14px;
+  line-height: 1.5;
   min-height: 40px;
 }
 
@@ -333,29 +364,45 @@ export default {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-top: 15px;
-  padding-top: 15px;
+  margin-top: 16px;
+  padding-top: 16px;
   border-top: 1px solid #e0e0e0;
 }
 
 .deck-meta {
-  color: #999;
-  font-size: 14px;
+  color: #767676;
+  font-size: 13px;
 }
 
 .public-badge {
-  background-color: #42b983;
-  color: white;
-  padding: 4px 8px;
-  border-radius: 4px;
-  font-size: 12px;
-  font-weight: 600;
+  background-color: #5c6bc0;
+  color: #ffffff;
+  padding: 3px 8px;
+  font-size: 11px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.private-badge {
+  background-color: #767676;
+  color: #ffffff;
+  padding: 3px 8px;
+  font-size: 11px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
 }
 
 .empty-state {
   text-align: center;
-  padding: 60px 20px;
+  padding: 80px 20px;
   color: #666;
+}
+
+.empty-state p {
+  font-size: 16px;
+  margin-bottom: 24px;
 }
 
 .modal-overlay {
@@ -372,19 +419,22 @@ export default {
 }
 
 .modal {
-  background: white;
-  padding: 30px;
-  border-radius: 8px;
+  background: #ffffff;
+  padding: 24px;
   max-width: 500px;
   width: 90%;
   max-height: 90vh;
   overflow-y: auto;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
 }
 
 .modal h2,
 .modal h3 {
   margin-top: 0;
-  color: #2c3e50;
+  margin-bottom: 20px;
+  color: #1a237e;
+  font-size: 20px;
+  font-weight: 400;
 }
 
 .deck-form {
@@ -399,24 +449,26 @@ export default {
 .form-group label {
   display: block;
   margin-bottom: 8px;
-  color: #2c3e50;
+  color: #1a237e;
   font-weight: 500;
+  font-size: 14px;
 }
 
 .form-group input[type="text"],
 .form-group textarea {
   width: 100%;
-  padding: 10px;
-  border: 2px solid #e0e0e0;
-  border-radius: 4px;
-  font-size: 16px;
+  padding: 8px 12px;
+  border: 1px solid #767676;
+  font-size: 14px;
   box-sizing: border-box;
+  font-family: inherit;
 }
 
 .form-group input:focus,
 .form-group textarea:focus {
   outline: none;
-  border-color: #42b983;
+  border-color: #5c6bc0;
+  box-shadow: 0 0 0 3px rgba(92, 107, 192, 0.1);
 }
 
 .checkbox-label {
@@ -424,6 +476,7 @@ export default {
   align-items: center;
   gap: 8px;
   cursor: pointer;
+  font-size: 14px;
 }
 
 .checkbox-label input[type="checkbox"] {
@@ -434,42 +487,58 @@ export default {
   display: flex;
   gap: 10px;
   justify-content: flex-end;
-  margin-top: 20px;
+  margin-top: 24px;
 }
 
 .save-btn {
-  padding: 10px 20px;
-  background-color: #42b983;
-  color: white;
+  padding: 8px 16px;
+  background-color: #5c6bc0;
+  color: #ffffff;
   border: none;
-  border-radius: 4px;
   cursor: pointer;
-  font-weight: 600;
+  font-weight: 500;
+  font-size: 14px;
+  transition: background-color 0.2s;
+}
+
+.save-btn:hover {
+  background-color: #4a56b2;
 }
 
 .cancel-btn {
-  padding: 10px 20px;
-  background-color: #95a5a6;
-  color: white;
-  border: none;
-  border-radius: 4px;
+  padding: 8px 16px;
+  background-color: #ffffff;
+  color: #1a237e;
+  border: 1px solid #767676;
   cursor: pointer;
-  font-weight: 600;
+  font-weight: 500;
+  font-size: 14px;
+  transition: background-color 0.2s;
+}
+
+.cancel-btn:hover {
+  background-color: #f5f5f5;
 }
 
 .confirm-delete-btn {
-  padding: 10px 20px;
-  background-color: #e74c3c;
-  color: white;
+  padding: 8px 16px;
+  background-color: #d13212;
+  color: #ffffff;
   border: none;
-  border-radius: 4px;
   cursor: pointer;
-  font-weight: 600;
+  font-weight: 500;
+  font-size: 14px;
+  transition: background-color 0.2s;
+}
+
+.confirm-delete-btn:hover {
+  background-color: #b8280f;
 }
 
 .warning {
-  color: #e74c3c;
+  color: #d13212;
   font-weight: 500;
+  font-size: 14px;
 }
 </style>
 

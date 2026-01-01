@@ -20,9 +20,9 @@ router.post('/check-username', async (req, res) => {
       });
     }
 
-    // Check if MongoDB is connected
+    // Check if database is connected
     if (mongoose.connection.readyState !== 1) {
-      console.error('MongoDB not connected. ReadyState:', mongoose.connection.readyState);
+      console.error('Database not connected. ReadyState:', mongoose.connection.readyState);
       return res.status(503).json({ 
         available: false, 
         message: 'Database connection error. Please try again later.' 

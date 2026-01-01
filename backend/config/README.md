@@ -42,7 +42,7 @@ node scripts/ensure-admin.js
 ```
 
 This script will:
-1. Connect to MongoDB
+1. Connect to the database
 2. Find the admin user by ID
 3. Set their `isAdmin` flag to `true` if it's not already set
 

@@ -37,6 +37,16 @@ const routes = [
     name: 'DeckEditor',
     component: () => import('../views/DeckEditorPage.vue'),
   },
+  {
+    path: '/decks/:deckId/study',
+    name: 'Study',
+    component: () => import('../views/StudyPage.vue'),
+  },
+  {
+    path: '/shared/:shareId',
+    name: 'SharedDeck',
+    component: () => import('../views/SharedDeckPage.vue'),
+  },
 ];
 
 const router = createRouter({

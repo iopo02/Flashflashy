@@ -8,7 +8,7 @@
     "dev": "nodemon server.js",
     "ensure-admin": "node scripts/ensure-admin.js"
   },
-  "keywords": ["express", "mongodb", "node"],
+  "keywords": ["express", "node", "vue", "flashcard"],
   "author": "",
   "license": "ISC",
   "dependencies": {

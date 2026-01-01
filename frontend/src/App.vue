@@ -1,25 +1,29 @@
 <template>
   <div id="app">
-    <nav>
-      <router-link to="/">Home</router-link> |
-      <router-link to="/about">About</router-link> |
-      <!-- Show login/register only when NOT logged in -->
-      <template v-if="!isLoggedIn">
-        <router-link to="/login">Login</router-link> |
-        <router-link to="/register">Register</router-link>
-      </template>
-      <!-- Show user info and logout when logged in -->
-      <template v-else>
-        <span class="user-info">Welcome, {{ currentUser?.username }}</span> |
-        <router-link to="/decks">My Decks</router-link> |
-        <a href="#" @click.prevent="handleLogout" class="logout-link">Logout</a>
-      </template>
-      <!-- Show admin panel only if user is admin -->
-      <template v-if="isLoggedIn && isAdmin">
-        | <router-link to="/admin">Admin Panel</router-link>
-      </template>
-    </nav>
-    <router-view />
+    <header class="app-header">
+      <div class="header-container">
+        <div class="header-left">
+          <router-link to="/" class="logo">Flashflashy</router-link>
+        </div>
+        <nav class="header-nav">
+          <template v-if="!isLoggedIn">
+            <router-link to="/login" class="nav-link">Sign In</router-link>
+            <router-link to="/register" class="nav-link">Register</router-link>
+          </template>
+          <template v-else>
+            <router-link to="/decks" class="nav-link">My Decks</router-link>
+            <span class="user-info">{{ currentUser?.username }}</span>
+            <template v-if="isAdmin">
+              <router-link to="/admin" class="nav-link">Admin</router-link>
+            </template>
+            <a href="#" @click.prevent="handleLogout" class="nav-link logout-link">Sign Out</a>
+          </template>
+        </nav>
+      </div>
+    </header>
+    <main class="app-main">
+      <router-view />
+    </main>
   </div>
 </template>
 
@@ -88,46 +92,89 @@ export default {
 </script>
 
 <style>
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
 #app {
-  font-family: Avenir, Helvetica, Arial, sans-serif;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  text-align: center;
-  color: #2c3e50;
-  margin-top: 60px;
+  min-height: 100vh;
+  background-color: #ffffff;
 }
 
-nav {
-  padding: 30px;
+.app-header {
+  background-color: #1a237e;
+  color: #ffffff;
+  padding: 0;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  position: sticky;
+  top: 0;
+  z-index: 1000;
 }
 
-nav a {
-  font-weight: bold;
-  color: #2c3e50;
+.header-container {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 12px 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.header-left {
+  display: flex;
+  align-items: center;
+}
+
+.logo {
+  font-size: 20px;
+  font-weight: 600;
+  color: #ffffff;
   text-decoration: none;
-  margin: 0 10px;
+  letter-spacing: -0.5px;
 }
 
-nav a.router-link-exact-active {
-  color: #42b983;
+.header-nav {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.nav-link {
+  color: #ffffff;
+  text-decoration: none;
+  font-size: 14px;
+  font-weight: 400;
+  padding: 6px 0;
+  transition: opacity 0.2s;
+}
+
+.nav-link:hover {
+  opacity: 0.8;
+}
+
+.nav-link.router-link-exact-active {
+  font-weight: 600;
 }
 
 .user-info {
-  color: #2c3e50;
+  color: #ffffff;
+  font-size: 14px;
   font-weight: 500;
+  padding: 0 8px;
 }
 
 .logout-link {
-  font-weight: bold;
-  color: #e74c3c;
-  text-decoration: none;
-  margin: 0 10px;
   cursor: pointer;
 }
 
-.logout-link:hover {
-  color: #c0392b;
-  text-decoration: underline;
+.app-main {
+  min-height: calc(100vh - 60px);
+  background-color: #ffffff;
 }
 </style>
 

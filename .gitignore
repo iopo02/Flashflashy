@@ -6,6 +6,11 @@ node_modules/
 .env
 .env.local
 .env.*.local
+# Keep .env.example files for documentation
+!.env.example
+
+# Sensitive configuration files
+backend/config/admin.js
 
 # Logs
 *.log
