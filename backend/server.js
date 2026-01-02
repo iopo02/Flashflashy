@@ -14,10 +14,7 @@ app.use(express.urlencoded({ extended: true }));
 // Support both MONGODB_URI (preferred) and DATABASE_URI (alias) for backward compatibility
 const MONGODB_URI = process.env.MONGODB_URI || process.env.DATABASE_URI || 'mongodb://localhost:27017/flashflashy';
 
-mongoose.connect(MONGODB_URI, {
-  useNewUrlParser: true,
-  useUnifiedTopology: true,
-})
+mongoose.connect(MONGODB_URI)
 .then(() => {
   console.log('Database connected successfully');
 })

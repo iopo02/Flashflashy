@@ -43,11 +43,8 @@ const userSchema = new mongoose.Schema({
   timestamps: false, // We're using createdAt manually
 });
 
-// Index for email (already unique, but explicit index for performance)
-userSchema.index({ email: 1 });
-
-// Index for username (already unique, but explicit index for performance)
-userSchema.index({ username: 1 });
+// Note: email and username already have indexes from unique: true
+// No need to create duplicate indexes
 
 module.exports = mongoose.model('User', userSchema);
 
