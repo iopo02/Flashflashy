@@ -54,10 +54,13 @@ This guide will help you deploy Flashflashy to production using MongoDB Atlas.
 2. Sign up with GitHub
 3. Click **"New Project"** → **"Deploy from GitHub repo"**
 4. Select your Flashflashy repository
-5. Railway will auto-detect it's a Node.js app
+5. In Railway's project settings:
+   - Set **Root Directory** to `backend` (or leave blank if using nixpacks.toml)
+   - Railway will use the `nixpacks.toml` or `railway.json` configuration
 6. Add environment variables:
    - `MONGODB_URI` = Your MongoDB Atlas connection string
    - `NODE_ENV` = `production`
+   - `PORT` = Railway will set this automatically (optional)
    - `ADMIN_USER_ID` = Your admin user ID (optional)
 7. Railway will automatically deploy and give you a URL
 

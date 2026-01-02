@@ -1,0 +1,17 @@
+{
+  "name": "flashflashy",
+  "version": "1.0.0",
+  "description": "Flashflashy - Flashcard study application",
+  "private": true,
+  "workspaces": [
+    "backend",
+    "frontend"
+  ],
+  "scripts": {
+    "start": "cd backend && npm start"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
+
