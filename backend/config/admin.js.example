@@ -1,0 +1,17 @@
+/**
+ * Admin Configuration Example
+ * 
+ * Copy this file to admin.js and fill in your admin user ID
+ * DO NOT commit admin.js to version control - it contains sensitive information
+ * 
+ * Usage:
+ * 1. Copy this file: cp config/admin.js.example config/admin.js
+ * 2. Replace ADMIN_USER_ID with your actual admin user ID
+ */
+
+const ADMIN_USER_ID = process.env.ADMIN_USER_ID || 'YOUR_ADMIN_USER_ID_HERE';
+
+module.exports = {
+  ADMIN_USER_ID,
+};
+

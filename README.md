@@ -1,127 +1,65 @@
-# Flashflashy - MEVN Stack Application
+# Flashflashy
 
-A full-stack application built with MongoDB, Express, Vue.js, and Node.js.
+A full-stack flashcard application for creating and studying decks of cards with spaced repetition.
 
-## Project Structure
+## Tech Stack
 
-```
-Flashflashy/
-├── backend/          # Node.js + Express backend
-│   ├── models/       # MongoDB models
-│   ├── routes/       # API routes
-│   ├── server.js     # Express server
-│   └── package.json
-├── frontend/         # Vue.js frontend
-│   ├── public/       # Static files
-│   ├── src/          # Vue source files
-│   │   ├── views/    # Vue components (pages)
-│   │   ├── router/   # Vue Router configuration
-│   │   ├── App.vue   # Root component
-│   │   └── main.js   # Entry point
-│   └── package.json
-└── README.md
-```
+- Backend: Node.js, Express
+- Frontend: Vue.js 3
+- Database: MongoDB (via Mongoose)
 
-## Prerequisites
+## Quick Start
 
-- Node.js (v14 or higher)
-- MongoDB (installed and running locally, or MongoDB Atlas account)
-- npm or yarn
-
-## Setup Instructions
-
-### 1. Backend Setup
+### Backend
 
 ```bash
 cd backend
 npm install
 ```
 
-Create a `.env` file in the `backend` directory:
+Create a `.env` file:
 
 ```env
 PORT=5000
-MONGODB_URI=mongodb://localhost:27017/flashflashy
+MONGODB_URI=your_database_connection_string
 NODE_ENV=development
 ```
 
-If using MongoDB Atlas, replace `MONGODB_URI` with your Atlas connection string.
-
-### 2. Frontend Setup
+### Frontend
 
 ```bash
 cd frontend
 npm install
 ```
 
-### 3. Running the Application
+### Run
 
-**Start MongoDB** (if running locally):
-```bash
-# On Windows (if MongoDB is installed as a service, it should start automatically)
-# On macOS/Linux:
-mongod
+Backend: `cd backend && npm run dev` (runs on http://localhost:5000)  
+Frontend: `cd frontend && npm run serve` (runs on http://localhost:8080)
+
+## Database Setup
+
+### MongoDB Atlas
+
+1. Create account at [MongoDB Atlas](https://www.mongodb.com/cloud/atlas)
+2. Create a free cluster (M0 tier)
+3. Create database user with password authentication
+4. Configure network access (allow 0.0.0.0/0 for development)
+5. Get connection string and add to `.env`:
+   ```
+   MONGODB_URI=mongodb+srv://username:password@cluster0.xxxxx.mongodb.net/flashflashy?retryWrites=true&w=majority
+   ```
+
+### Local MongoDB
+
+```env
+MONGODB_URI=mongodb://localhost:27017/flashflashy
 ```
 
-**Start the Backend Server:**
-```bash
-cd backend
-npm run dev
-```
+## Deployment
 
-The backend will run on `http://localhost:5000`
-
-**Start the Frontend Development Server:**
-```bash
-cd frontend
-npm run serve
-```
-
-The frontend will run on `http://localhost:8080`
-
-## Available Scripts
-
-### Backend
-- `npm start` - Start the production server
-- `npm run dev` - Start the development server with nodemon
-
-### Frontend
-- `npm run serve` - Start the development server
-- `npm run build` - Build for production
-- `npm run lint` - Lint and fix files
-
-## API Endpoints
-
-- `GET /` - Welcome message
-- `GET /api/test` - Test API endpoint
-
-## Technologies Used
-
-- **MongoDB** - NoSQL database
-- **Express** - Web framework for Node.js
-- **Vue.js 3** - Progressive JavaScript framework
-- **Node.js** - JavaScript runtime
-- **Axios** - HTTP client for API requests
-- **Vue Router** - Official router for Vue.js
-- **Mongoose** - MongoDB object modeling
-
-## Development
-
-The frontend is configured to proxy API requests to the backend during development. All requests to `/api/*` will be forwarded to `http://localhost:5000/api/*`.
-
-## Production Build
-
-To build the frontend for production:
-
-```bash
-cd frontend
-npm run build
-```
-
-The built files will be in the `frontend/dist` directory.
+See [DEPLOYMENT.md](DEPLOYMENT.md) for detailed deployment instructions.
 
 ## License
 
 ISC
-
-"# Flashflashy" 
