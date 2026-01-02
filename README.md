@@ -2,6 +2,9 @@
 
 A full-stack flashcard application for creating and studying decks of cards with spaced repetition.
 
+https://flashflashyvercel.vercel.app/
+
+
 ## Tech Stack
 
 - Backend: Node.js, Express
