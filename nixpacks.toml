@@ -1,8 +1,10 @@
 [phases.setup]
-nixPkgs = ["nodejs-18_x"]
+nixPkgs = ["nodejs-18_x", "python3", "make", "gcc"]
 
 [phases.install]
-cmds = ["cd backend && npm install --production"]
+cmds = [
+  "cd backend && npm install --production --build-from-source=bcrypt"
+]
 
 [start]
 cmd = "cd backend && node server.js"
